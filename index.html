@@ -165,11 +165,71 @@
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
+        
+        /* ステップ表示のスタイル */
+        .steps-container {
+            margin: 30px 0;
+        }
+        .step {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .step.active {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+        .step.completed {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .step-number {
+            background-color: #6c757d;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .step.active .step-number {
+            background-color: #007bff;
+        }
+        .step.completed .step-number {
+            background-color: #28a745;
+        }
+        .step-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .step-description {
+            color: #6c757d;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .step-content {
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎨 イラスト生成アプリ (HTML版)</h1>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 30px;">
+            人物画像を分析して「みん銀スタイル」のイラストを生成します
+        </p>
         
         <!-- API Key設定セクション -->
         <div class="api-key-section">
@@ -186,45 +246,81 @@
                 API Keyは外部に送信されず、OpenAI APIとの通信にのみ使用されます。
             </p>
         </div>
-        
-        <!-- 画像アップロードエリア -->
-        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-            <p>📸 人物画像をアップロードしてください</p>
-            <p>クリックまたはドラッグ&ドロップ</p>
-            <p><small>PNG, JPG, JPEG, GIF (最大16MB)</small></p>
-        </div>
-        
-        <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.gif">
-        
-        <!-- ボタンエリア -->
-        <div style="text-align: center;">
-            <button class="btn" onclick="analyzeImage()" id="analyzeBtn" disabled>
-                📤 画像解析
-            </button>
-            <button class="btn" onclick="generateIllustration()" id="generateBtn" disabled>
-                🎨 イラスト生成
-            </button>
+
+        <!-- ステップ表示エリア -->
+        <div class="steps-container">
+            <!-- Step 1: 画像アップロード・解析 -->
+            <div class="step" id="step1">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 class="step-title">📸 画像アップロード・解析</h3>
+                        <p class="step-description">
+                            人物画像をアップロードして、AIが服装・髪型・アクセサリーなどの特徴を自動解析します
+                        </p>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <!-- 画像アップロードエリア -->
+                    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                        <p>📸 人物画像をアップロードしてください</p>
+                        <p>クリックまたはドラッグ&ドロップ</p>
+                        <p><small>PNG, JPG, JPEG, GIF (最大16MB)</small></p>
+                    </div>
+                    
+                    <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.gif">
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button class="btn" onclick="analyzeImage()" id="analyzeBtn" disabled>
+                            📤 画像解析を開始
+                        </button>
+                    </div>
+
+                    <!-- 解析結果表示 -->
+                    <div id="step1Results" style="display: none;">
+                        <h4>📊 解析結果</h4>
+                        <div id="featuresResult" class="features-output"></div>
+                        
+                        <h4>📝 更新されたYAMLテンプレート</h4>
+                        <div id="yamlResult" class="output-section"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: イラスト生成 -->
+            <div class="step" id="step2">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 class="step-title">🎨 イラスト生成</h3>
+                        <p class="step-description">
+                            解析結果を基に「みん銀スタイル」のイラストを生成します（モノクロ線画、小さな目、ナチュラルウェーブ髪）
+                        </p>
+                    </div>
+                </div>
+                <div class="step-content">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <button class="btn" onclick="generateIllustration()" id="generateBtn" disabled>
+                            🎨 イラストを生成
+                        </button>
+                    </div>
+
+                    <!-- イラスト生成結果 -->
+                    <div id="step2Results" style="display: none;">
+                        <h4>📝 生成プロンプト</h4>
+                        <div id="promptResult" class="output-section"></div>
+                        
+                        <h4>🖼️ 生成されたイラスト</h4>
+                        <div id="generatedImage" class="generated-image"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ローディング表示 -->
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <p>処理中...</p>
-        </div>
-
-        <!-- 結果表示エリア -->
-        <div class="results" id="results">
-            <h3>📊 解析結果</h3>
-            <div id="featuresResult" class="features-output"></div>
-            
-            <h3>📝 更新されたYAMLテンプレート</h3>
-            <div id="yamlResult" class="output-section"></div>
-            
-            <h3>📝 生成プロンプト</h3>
-            <div id="promptResult" class="output-section"></div>
-            
-            <h3>🖼️ 生成されたイラスト</h3>
-            <div id="generatedImage" class="generated-image"></div>
         </div>
     </div>
 
@@ -614,6 +710,18 @@ Create a clean, minimalist line art illustration that exactly matches the YAML s
             reader.readAsDataURL(file);
         }
 
+        // ステップ状態管理
+        function updateStepState(stepNumber, state) {
+            const step = document.getElementById(`step${stepNumber}`);
+            step.classList.remove('active', 'completed');
+            
+            if (state === 'active') {
+                step.classList.add('active');
+            } else if (state === 'completed') {
+                step.classList.add('completed');
+            }
+        }
+
         // ボタン状態更新
         function updateButtonStates() {
             const apiKey = document.getElementById('apiKeyInput').value.trim();
@@ -621,6 +729,16 @@ Create a clean, minimalist line art illustration that exactly matches the YAML s
             
             document.getElementById('analyzeBtn').disabled = !apiKey || !fileSelected;
             document.getElementById('generateBtn').disabled = !apiKey || !currentFeatures;
+
+            // ステップ状態更新
+            if (apiKey && fileSelected) {
+                updateStepState(1, 'active');
+            }
+            
+            if (currentFeatures) {
+                updateStepState(1, 'completed');
+                updateStepState(2, 'active');
+            }
         }
 
         // アラート表示
@@ -726,7 +844,8 @@ Create a clean, minimalist line art illustration that exactly matches the YAML s
                 const yamlString = styleGuide.objectToYaml(updatedTemplate);
                 document.getElementById('yamlResult').textContent = yamlString;
                 
-                document.getElementById('results').style.display = 'block';
+                // Step1の結果を表示
+                document.getElementById('step1Results').style.display = 'block';
                 
                 showAlert('画像解析が完了しました', 'success');
                 updateButtonStates();
@@ -744,7 +863,8 @@ Create a clean, minimalist line art illustration that exactly matches the YAML s
                 const yamlString = styleGuide.objectToYaml(updatedTemplate);
                 document.getElementById('yamlResult').textContent = yamlString;
                 
-                document.getElementById('results').style.display = 'block';
+                // Step1の結果を表示
+                document.getElementById('step1Results').style.display = 'block';
                 showAlert('デフォルト設定で続行します', 'warning');
                 updateButtonStates();
                 
@@ -834,6 +954,12 @@ Create a clean, minimalist line art illustration that exactly matches the YAML s
                     <br><br>
                     <a href="${imageUrl}" target="_blank" class="btn">🔗 フルサイズで表示</a>
                 `;
+
+                // Step2の結果を表示
+                document.getElementById('step2Results').style.display = 'block';
+                
+                // Step2を完了状態に
+                updateStepState(2, 'completed');
 
                 showAlert('イラスト生成が完了しました', 'success');
 
