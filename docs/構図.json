@@ -1,0 +1,8 @@
+{
+    "canvas_shape": "square",
+    "subject_position": "centered",
+    "framing": "bust_up",
+    "background": "plain_white",
+    "perspective": "flat",
+    "focus": "single_character"
+}

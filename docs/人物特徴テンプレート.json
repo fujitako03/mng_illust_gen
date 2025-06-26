@@ -1,0 +1,47 @@
+{
+  "silhouette": {
+    "body_type": "slim | average | large",
+    "height": "short | medium | tall",
+    "pose": "walking | standing | waving | holding_item"
+  },
+  "face": {
+    "face_shape": "round | oval | square | long",
+    "glasses": "none | round | square | thick_frame",
+    "beard": {
+      "style": "none | stubble | mustache | goatee | full_beard",
+      "thickness": "light | medium | thick",
+      "coverage": "chin_only | jawline | full_face"
+    },
+    "direction": "three_quarter",
+    "nose": {
+        "style": "protruding",
+        "angle": "profile_view",
+        "complexity": "minimal"
+    },
+    "eye": "small_dot",
+    "eyebrows": "none",
+    "mouth": "none"
+  },
+  "hair": {
+    "style": "short | bob | long | tied | curly",
+    "volume": "flat | medium | voluminous",
+    "bangs": "none | straight | side | full",
+    "shape": "cloud_like"
+  },
+  "clothing": {
+    "top": {
+      "type": "tshirt | shirt | blouse | hoodie | sweater",
+      "pattern": "plain | stripes | dots | logo_text",
+      "sleeve": "short | long | none"
+    },
+    "bottom": {
+      "type": "jeans | skirt | trousers | dress | shorts",
+      "length": "short | medium | long"
+    }
+  },
+  "accessories": {
+    "hat": "none | cap | beanie | wide_brim",
+    "bag": "none | shoulder | tote | backpack",
+    "others": ["smartphone", "earphones", "watch"]
+  }
+}

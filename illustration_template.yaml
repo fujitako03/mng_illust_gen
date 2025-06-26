@@ -1,0 +1,81 @@
+style:
+  line_art:
+    line_weight: uniform(thin)
+    line_texture: very smooth
+    outline_emphasis: true
+    fill: selective_black
+  color:
+    palette: monochrome
+    use_of_color: black_and_white_only
+    shading: none
+    highlighting: none
+  rendering:
+    detail_level: minimal
+    texture_use: none
+    lighting: none
+  composition:
+    background: plain_white
+    focus: group_composition
+    perspective: flat
+  influence:
+    style_origin:
+      - graphic_design
+      - flat_illustration
+      - editorial_cartoon
+    notable_traits:
+      - uniform_line
+      - no_shadow
+      - no_gradient
+      - symbolic_shapes
+      - monochrome_design
+
+composition:
+  canvas_shape: square
+  subject_position: centered
+  framing: bust_up
+  background: plain_white
+  perspective: flat
+  focus: single_character
+
+character:
+  # 固定値 - みん銀イラストスタイルの特徴
+  face:
+    direction: three_quarter
+    nose:
+      style: protruding
+      angle: profile_view
+      complexity: minimal
+    eye: very_small_dot
+    eyebrows: none
+    mouth: no_mouth
+  hair:
+    shape: natural_wave
+  
+  # 人物ごとに設定する項目
+  silhouette:
+    body_type: # slim | average | large
+    height: # short | medium | tall
+    pose: # walking | standing | waving | holding_item
+  face:
+    face_shape: # round | oval | square | long
+    glasses: # none | round | square | thick_frame
+    beard:
+      style: # none | stubble | mustache | goatee | full_beard
+      thickness: # light | medium | thick
+      coverage: # chin_only | jawline | full_face
+  hair:
+    style: # short | bob | long | tied | curly
+    volume: # flat | medium | voluminous
+    bangs: # none | straight | side | full
+  clothing:
+    top:
+      type: # tshirt | shirt | blouse | hoodie | sweater
+      pattern: # plain | stripes | dots | logo_text
+      sleeve: # short | long | none
+    bottom:
+      type: # jeans | skirt | trousers | dress | shorts
+      length: # short | medium | long
+  accessories:
+    hat: # none | cap | beanie | wide_brim
+    bag: # none | shoulder | tote | backpack
+    others: # [smartphone, earphones, watch]

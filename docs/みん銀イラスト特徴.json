@@ -1,0 +1,30 @@
+{
+  "style": {
+    "line_art": {
+      "line_weight": "uniform(thin)",
+      "line_texture": "very smooth",
+      "outline_emphasis": true,
+      "fill": "selective_black"
+    },
+    "color": {
+      "palette": "monochrome",
+      "use_of_color": "black_and_white_only",
+      "shading": "none",
+      "highlighting": "none"
+    },
+    "rendering": {
+      "detail_level": "minimal",
+      "texture_use": "none",
+      "lighting": "none"
+    },
+    "composition": {
+      "background": "plain_white",
+      "focus": "group_composition",
+      "perspective": "flat"
+    },
+    "influence": {
+      "style_origin": ["graphic_design", "flat_illustration", "editorial_cartoon"],
+      "notable_traits": ["uniform_line", "no_shadow", "no_gradient", "symbolic_shapes", "monochrome_design"]
+    }
+  }
+}

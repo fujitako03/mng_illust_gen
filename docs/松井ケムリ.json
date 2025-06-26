@@ -1,0 +1,47 @@
+{
+  "silhouette": {
+    "body_type": "large",
+    "height": "medium",
+    "pose": "standing"
+  },
+  "face": {
+    "face_shape": "round",
+    "direction": "three_quarter",
+    "nose": {
+        "style": "protruding",
+        "angle": "profile_view",
+        "complexity": "minimal"
+    },
+    "eye": "small_dot",
+    "eyebrows": "none",
+    "mouth": "none",
+    "glasses": "none",
+    "beard": {
+      "style": "goatee",
+      "thickness": "thick",
+      "coverage": "jawline"
+    }
+  },
+  "hair": {
+    "style": "short",
+    "volume": "medium",
+    "bangs": "none",
+    "shape": "cloud_like"
+  },
+  "clothing": {
+    "top": {
+      "type": "shirt",
+      "pattern": "plain",
+      "sleeve": "long"
+    },
+    "bottom": {
+      "type": "trousers",
+      "length": "long"
+    }
+  },
+  "accessories": {
+    "hat": "none",
+    "bag": "none",
+    "others": ["microphone"]
+  }
+}
