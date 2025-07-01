@@ -102,6 +102,52 @@
             overflow-y: auto;
             margin: 10px 0;
         }
+        
+        /* プロンプトコピー機能用（promptResultのみ適用） */
+        #promptResult {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        #promptResult:hover {
+            background-color: #3a4a5c;
+            border-color: #4a90e2;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+        }
+        
+        #promptResult::before {
+            content: "📋 クリックでコピー";
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: rgba(74, 144, 226, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+        
+        #promptResult:hover::before {
+            opacity: 1;
+        }
+        
+        #promptResult.copied {
+            background-color: #22543d;
+            border-color: #38a169;
+        }
+        
+        #promptResult.copied::before {
+            content: "✅ コピー完了";
+            background: rgba(56, 161, 105, 0.9);
+            opacity: 1;
+        }
         .features-output {
             background-color: #f7fafc;
             padding: 15px;
@@ -399,7 +445,16 @@
 1. 服装の種類と柄 - 具体的な服装と色、柄、スタイルを詳しく描写
 2. 髪型とボリューム - 長さ、スタイル、質感、ボリューム感を詳しく描写  
 3. 体型とポーズ - 体格、姿勢、動作を詳しく描写
-4. ヒゲの状態 - ヒゲの有無、濃さ、形状を詳しく描写（薄い場合は「なし」）
+4. ヒゲの状態 - ヒゲの有無、濃さ、形状、範囲、接続関係を詳しく描写（薄い場合は「なし」）
+   ※ヒゲがある場合は以下を必ず記述：
+   - 口ひげ（鼻の下）の有無と濃さ
+   - あごひげ（あご先）の有無と濃さ
+   - 頬ひげ（頬から顎ライン）の有無と濃さ
+   - もみあげの有無と濃さ
+   ※特に以下の接続関係を必ず明記：
+   - 頬ひげ・あごひげともみあげが繋がっているかどうか
+   - 口ひげがあるかどうか
+   - 口ひげと顎ひげが繋がっているかどうか
 5. メガネの有無と特徴 - メガネの形状、色、特徴を詳しく描写
 6. アクセサリー - 身に着けている小物類を詳しく描写
 7. 全体的なシルエット - 体型の特徴、バランス、印象を詳しく描写
@@ -408,6 +463,8 @@
 - 選択肢に縛られず、見えるままを自然な文章で具体的に描写してください
 - 色や質感、印象なども含めて詳しく説明してください
 - 曖昧な表現ではなく、具体的で明確な描写をしてください
+- ヒゲについては、どの部分（口ひげ・あごひげ・頬ひげ・もみあげ）にどの程度生えているかを正確に記述してください
+- ヒゲの接続関係（もみあげとの接続、口ひげの有無、口ひげと顎ひげの接続）を必ず明記してください
 
 【JSON出力形式】
 以下の形式で、各項目を詳細な文章で回答してください：
@@ -415,7 +472,7 @@
   "clothing": "服装の具体的な描写（種類、色、柄、スタイルなど）",
   "hair": "髪型の具体的な描写（長さ、スタイル、質感、ボリュームなど）",
   "body_pose": "体型とポーズの具体的な描写（体格、姿勢、動作など）",
-  "beard": "ヒゲの具体的な描写（有無、濃さ、形状など）",
+  "beard": "ヒゲの具体的な描写（有無、濃さ、形状、範囲、接続関係など）※ある場合は各部位の有無と、もみあげとの接続・口ひげの有無・口ひげと顎ひげの接続を必ず明記",
   "glasses": "メガネの具体的な描写（有無、形状、色、特徴など）",
   "accessories": "アクセサリーの具体的な描写（種類、特徴、印象など）",
   "silhouette": "全体シルエットの具体的な描写（体型バランス、印象など）"
@@ -707,6 +764,51 @@ Create a clean, minimalist line art illustration in monochrome that perfectly em
             styleGuide = new MinginStyleGuide();
             setupEventListeners();
         });
+
+        // プロンプトコピー機能
+        function setupPromptCopyFeature() {
+            const promptResult = document.getElementById('promptResult');
+            if (!promptResult) return;
+            
+            // 既存のリスナーがある場合は削除
+            promptResult.removeEventListener('click', copyPromptHandler);
+            promptResult.addEventListener('click', copyPromptHandler);
+        }
+        
+        // プロンプトコピーハンドラー
+        async function copyPromptHandler() {
+            try {
+                const text = this.textContent;
+                await navigator.clipboard.writeText(text);
+                
+                // 成功フィードバック
+                this.classList.add('copied');
+                setTimeout(() => {
+                    this.classList.remove('copied');
+                }, 2000);
+                
+            } catch (err) {
+                // フォールバック: 選択してコピー
+                const range = document.createRange();
+                range.selectNodeContents(this);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                
+                try {
+                    document.execCommand('copy');
+                    this.classList.add('copied');
+                    setTimeout(() => {
+                        this.classList.remove('copied');
+                    }, 2000);
+                } catch (fallbackErr) {
+                    console.error('コピーに失敗しました:', fallbackErr);
+                    showAlert('コピーに失敗しました。手動で選択してコピーしてください。', 'error');
+                }
+                
+                selection.removeAllRanges();
+            }
+        }
 
         // イベントリスナー設定
         function setupEventListeners() {
@@ -1014,6 +1116,9 @@ Create a clean, minimalist line art illustration in monochrome that perfectly em
 
                 const prompt = styleGuide.generateIllustrationPrompt(currentFeatures);
                 document.getElementById('promptResult').textContent = prompt;
+                
+                // プロンプトコピー機能を初期化
+                setupPromptCopyFeature();
                 
                 const selectedQuality = document.getElementById('qualitySelect').value;
 
