@@ -282,10 +282,10 @@
 
                     <!-- 解析結果表示 -->
                     <div id="step1Results" style="display: none;">
-                        <h4>📊 抽出結果</h4>
-                        <div id="featuresResult" class="features-output"></div>
+                        <!-- JSONは非表示 -->
+                        <div id="featuresResult" style="display: none;"></div>
                         
-                        <h4>📝 抽出された特徴要約</h4>
+                        <h4>📝 抽出された特徴</h4>
                         <div id="yamlResult" class="output-section"></div>
                     </div>
                 </div>
@@ -393,46 +393,32 @@
             }
 
             generateAnalysisPrompt() {
-                return `この人物画像を分析して、「みん銀スタイル」のイラスト生成に必要な7つの特徴を抽出してください。
+                return `この人物画像を詳細に分析して、「みん銀スタイル」のイラスト生成に必要な7つの特徴を文章で具体的に描写してください。
 
 【抽出対象の7つの特徴】
-1. 服装の種類と柄
-2. 髪型とボリューム  
-3. 体型とポーズ
-4. ヒゲを伸ばしているか（薄い、または剃っている場合は無しと表現）
-5. メガネの有無
-6. アクセサリー
-7. 全体的なシルエット
+1. 服装の種類と柄 - 具体的な服装と色、柄、スタイルを詳しく描写
+2. 髪型とボリューム - 長さ、スタイル、質感、ボリューム感を詳しく描写  
+3. 体型とポーズ - 体格、姿勢、動作を詳しく描写
+4. ヒゲの状態 - ヒゲの有無、濃さ、形状を詳しく描写（薄い場合は「なし」）
+5. メガネの有無と特徴 - メガネの形状、色、特徴を詳しく描写
+6. アクセサリー - 身に着けている小物類を詳しく描写
+7. 全体的なシルエット - 体型の特徴、バランス、印象を詳しく描写
 
-【服装の選択肢】
-トップス: Tシャツ, ブラウス, ワイシャツ, スウェット, パーカ, プルオーバー, ブレザー, カーディガン
-柄: 無地, ストライプ, 格子, ドット, ロゴ
-ボトムス: ジーンズ, チノパン, ワイドパンツ, スカート, ワンピース
-
-【ヒゲのパターン】
-none, 顎先のみ, 口ひげ, あごひげ, 組み合わせ
-※薄いヒゲは「none」として扱う
+【重要な指示】
+- 選択肢に縛られず、見えるままを自然な文章で具体的に描写してください
+- 色や質感、印象なども含めて詳しく説明してください
+- 曖昧な表現ではなく、具体的で明確な描写をしてください
 
 【JSON出力形式】
-以下の形式で回答してください：
+以下の形式で、各項目を詳細な文章で回答してください：
 {
-  "clothing": {
-    "top_type": "選択肢から1つ",
-    "top_pattern": "選択肢から1つ",
-    "bottom_type": "選択肢から1つ"
-  },
-  "hair": {
-    "style": "short/bob/long/tied/curly",
-    "volume": "flat/medium/voluminous"
-  },
-  "silhouette": {
-    "body_type": "slim/average/large",
-    "pose": "standing/walking/waving/holding_item",
-    "overall_shape": "逆三角/長方形/砂時計"
-  },
-  "beard": "none/顎先のみ/口ひげ/あごひげ/組み合わせ",
-  "glasses": "none/round/square/thick_frame",
-  "accessories": ["該当するもの: hat, bag, headphones, watch, smartphone など"]
+  "clothing": "服装の具体的な描写（種類、色、柄、スタイルなど）",
+  "hair": "髪型の具体的な描写（長さ、スタイル、質感、ボリュームなど）",
+  "body_pose": "体型とポーズの具体的な描写（体格、姿勢、動作など）",
+  "beard": "ヒゲの具体的な描写（有無、濃さ、形状など）",
+  "glasses": "メガネの具体的な描写（有無、形状、色、特徴など）",
+  "accessories": "アクセサリーの具体的な描写（種類、特徴、印象など）",
+  "silhouette": "全体シルエットの具体的な描写（体型バランス、印象など）"
 }
 
 JSONのみを回答してください。`;
@@ -441,12 +427,13 @@ JSONのみを回答してください。`;
             // 解析結果から特徴要約を生成
             summarizeFeatures(analyzedFeatures) {
                 const summary = {
-                    clothing: `${analyzedFeatures.clothing?.top_type || 'Tシャツ'}(柄: ${analyzedFeatures.clothing?.top_pattern || '無地'}), ${analyzedFeatures.clothing?.bottom_type || 'ジーンズ'}`,
-                    hair: `${analyzedFeatures.hair?.style || 'short'}, ボリューム: ${analyzedFeatures.hair?.volume || 'medium'}`,
-                    body: `体型: ${analyzedFeatures.silhouette?.body_type || 'average'}, ポーズ: ${analyzedFeatures.silhouette?.pose || 'standing'}, シルエット: ${analyzedFeatures.silhouette?.overall_shape || '長方形'}`,
-                    beard: analyzedFeatures.beard || 'none',
-                    glasses: analyzedFeatures.glasses || 'none', 
-                    accessories: Array.isArray(analyzedFeatures.accessories) ? analyzedFeatures.accessories.join(', ') : 'none'
+                    clothing: analyzedFeatures.clothing || '服装情報が取得できませんでした',
+                    hair: analyzedFeatures.hair || '髪型情報が取得できませんでした',
+                    body: analyzedFeatures.body_pose || '体型・ポーズ情報が取得できませんでした',
+                    beard: analyzedFeatures.beard || 'ヒゲ情報が取得できませんでした',
+                    glasses: analyzedFeatures.glasses || 'メガネ情報が取得できませんでした',
+                    accessories: analyzedFeatures.accessories || 'アクセサリー情報が取得できませんでした',
+                    silhouette: analyzedFeatures.silhouette || 'シルエット情報が取得できませんでした'
                 };
                 return summary;
             }
@@ -454,12 +441,27 @@ JSONのみを回答してください。`;
             // 人物特徴をテキスト形式で整理
             formatFeatures(features) {
                 return `【抽出された特徴】
-服装: ${features.clothing}
-髪型: ${features.hair}
-体型・ポーズ: ${features.body}
-ヒゲ: ${features.beard}
-メガネ: ${features.glasses}
-アクセサリー: ${features.accessories}`;
+
+🧥 服装
+${features.clothing}
+
+💇 髪型
+${features.hair}
+
+🧍 体型・ポーズ
+${features.body}
+
+🧔 ヒゲ
+${features.beard}
+
+👓 メガネ
+${features.glasses}
+
+💍 アクセサリー
+${features.accessories}
+
+👤 全体シルエット
+${features.silhouette}`;
             }
 
             // みん銀スタイル仕様に基づくイラスト生成プロンプト
@@ -475,6 +477,7 @@ JSONのみを回答してください。`;
 ヒゲ: ${summary.beard}
 メガネ: ${summary.glasses}
 アクセサリー: ${summary.accessories}
+全体シルエット: ${summary.silhouette}
 
 【みん銀スタイル固定仕様。厳守】
 みん銀スタイル:
@@ -688,23 +691,13 @@ Create a clean, minimalist line art illustration in monochrome that perfectly em
 
             getDefaultFeatures() {
                 return {
-                    clothing: {
-                        top_type: "Tシャツ",
-                        top_pattern: "無地",
-                        bottom_type: "ジーンズ"
-                    },
-                    hair: {
-                        style: "short",
-                        volume: "medium"
-                    },
-                    silhouette: {
-                        body_type: "average",
-                        pose: "standing",
-                        overall_shape: "長方形"
-                    },
-                    beard: "none",
-                    glasses: "none",
-                    accessories: []
+                    clothing: "カジュアルな白いTシャツに濃紺のジーンズを着用。シンプルで清潔感のある装い。",
+                    hair: "ショートからミディアムヘア。自然なストレートで適度なボリューム。",
+                    body_pose: "リラックスした立ち姿。平均的な体型で真っ直ぐ立っている姿勢。",
+                    beard: "ヒゲは生えておらず、清潔に剃られている。",
+                    glasses: "メガネは着用していない。",
+                    accessories: "特に目立つアクセサリーは身に着けていない。",
+                    silhouette: "バランスの取れた標準的な体型。肩幅と腰幅のバランスが良い長方形型のシルエット。"
                 };
             }
         }
@@ -901,7 +894,10 @@ Create a clean, minimalist line art illustration in monochrome that perfectly em
                 setLoading(true);
 
                 const base64Image = await fileToBase64(file);
+                console.log('🔍 Base64 Image Length:', base64Image.length);
+                
                 const prompt = styleGuide.generateAnalysisPrompt();
+                console.log('🔍 Analysis Prompt:', prompt);
 
                 const requestBody = JSON.stringify({
                     model: "gpt-4o",
@@ -917,6 +913,12 @@ Create a clean, minimalist line art illustration in monochrome that perfectly em
                             }
                         ]
                     }],
+                    max_tokens: 1000
+                });
+
+                console.log('🔍 Request Body Structure:', {
+                    model: "gpt-4o",
+                    messages: "Array with text and image",
                     max_tokens: 1000
                 });
 
@@ -938,15 +940,21 @@ Create a clean, minimalist line art illustration in monochrome that perfectly em
                 }
 
                 const data = await response.json();
+                console.log('🔍 Full API Response:', data);
+                
                 const content = data.choices[0].message.content;
+                console.log('🔍 GPT-4o Response Content:', content);
 
                 // JSONを抽出
                 const jsonMatch = content.match(/\{[\s\S]*\}/);
                 if (!jsonMatch) {
+                    console.error('❌ JSON not found in response:', content);
                     throw new Error('有効なJSONレスポンスが見つかりませんでした');
                 }
 
+                console.log('🔍 Extracted JSON String:', jsonMatch[0]);
                 currentFeatures = JSON.parse(jsonMatch[0]);
+                console.log('✅ Parsed Features:', currentFeatures);
                 
                 // 結果表示
                 document.getElementById('featuresResult').textContent = JSON.stringify(currentFeatures, null, 2);
@@ -963,11 +971,13 @@ Create a clean, minimalist line art illustration in monochrome that perfectly em
                 updateButtonStates();
 
             } catch (error) {
-                console.error('Analysis error:', error);
+                console.error('❌ Analysis error:', error);
+                console.log('⚠️ Using default features due to error');
                 showAlert(`特徴抽出エラー: ${error.message}`, 'error');
                 
                 // デフォルト特徴を使用
                 currentFeatures = styleGuide.getDefaultFeatures();
+                console.log('🔄 Default Features:', currentFeatures);
                 document.getElementById('featuresResult').textContent = JSON.stringify(currentFeatures, null, 2);
                 
                 // デフォルト特徴で要約を生成・表示
