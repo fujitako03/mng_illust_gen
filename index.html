@@ -374,6 +374,46 @@
         let currentFeatures = null;
         let styleGuide = null;
 
+        // テキストから特徴を抽出するフォールバック関数
+        function extractFeaturesFromText(content) {
+            try {
+                const features = {
+                    clothing: "",
+                    hair: "",
+                    body_pose: "",
+                    beard: "",
+                    glasses: "",
+                    accessories: "",
+                    silhouette: ""
+                };
+
+                // 各項目をテキストから抽出
+                const patterns = {
+                    clothing: /(?:服装|衣服|着用|シャツ|パンツ|スカート|ワンピース)[：:]\s*([^\n]+)/i,
+                    hair: /(?:髪型|髪|ヘア)[：:]\s*([^\n]+)/i,
+                    body_pose: /(?:体型|ポーズ|姿勢|体格)[：:]\s*([^\n]+)/i,
+                    beard: /(?:ヒゲ|髭|ひげ)[：:]\s*([^\n]+)/i,
+                    glasses: /(?:メガネ|眼鏡|グラス)[：:]\s*([^\n]+)/i,
+                    accessories: /(?:アクセサリー|装身具|小物)[：:]\s*([^\n]+)/i,
+                    silhouette: /(?:シルエット|全体|体型)[：:]\s*([^\n]+)/i
+                };
+
+                let foundAny = false;
+                for (const [key, pattern] of Object.entries(patterns)) {
+                    const match = content.match(pattern);
+                    if (match) {
+                        features[key] = match[1].trim();
+                        foundAny = true;
+                    }
+                }
+
+                return foundAny ? features : null;
+            } catch (error) {
+                console.error('Text extraction error:', error);
+                return null;
+            }
+        }
+
         // みん銀スタイル生成クラス（簡素化版）
         class MinginStyleGuide {
             constructor() {
@@ -1047,16 +1087,73 @@ Create a clean, minimalist line art illustration in monochrome that perfectly em
                 const content = data.choices[0].message.content;
                 console.log('🔍 GPT-4o Response Content:', content);
 
-                // JSONを抽出
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    console.error('❌ JSON not found in response:', content);
-                    throw new Error('有効なJSONレスポンスが見つかりませんでした');
+                // JSONを抽出（複数のパターンを試行）
+                let extractedFeatures = null;
+                
+                // パターン1: 通常のJSON形式
+                let jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    try {
+                        console.log('🔍 Extracted JSON String (Pattern 1):', jsonMatch[0]);
+                        extractedFeatures = JSON.parse(jsonMatch[0]);
+                        console.log('✅ Parsed Features (Pattern 1):', extractedFeatures);
+                    } catch (parseError) {
+                        console.warn('⚠️ Pattern 1 parse failed:', parseError);
+                    }
                 }
-
-                console.log('🔍 Extracted JSON String:', jsonMatch[0]);
-                currentFeatures = JSON.parse(jsonMatch[0]);
-                console.log('✅ Parsed Features:', currentFeatures);
+                
+                // パターン2: コードブロック内のJSON
+                if (!extractedFeatures) {
+                    jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+                    if (jsonMatch) {
+                        try {
+                            console.log('🔍 Extracted JSON String (Pattern 2):', jsonMatch[1]);
+                            extractedFeatures = JSON.parse(jsonMatch[1]);
+                            console.log('✅ Parsed Features (Pattern 2):', extractedFeatures);
+                        } catch (parseError) {
+                            console.warn('⚠️ Pattern 2 parse failed:', parseError);
+                        }
+                    }
+                }
+                
+                // パターン3: 最後の{}を取得
+                if (!extractedFeatures) {
+                    const allMatches = content.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g);
+                    if (allMatches && allMatches.length > 0) {
+                        const lastMatch = allMatches[allMatches.length - 1];
+                        try {
+                            console.log('🔍 Extracted JSON String (Pattern 3):', lastMatch);
+                            extractedFeatures = JSON.parse(lastMatch);
+                            console.log('✅ Parsed Features (Pattern 3):', extractedFeatures);
+                        } catch (parseError) {
+                            console.warn('⚠️ Pattern 3 parse failed:', parseError);
+                        }
+                    }
+                }
+                
+                if (!extractedFeatures) {
+                    console.error('❌ JSON not found in response:', content);
+                    console.log('🔄 Attempting to extract text-based features...');
+                    
+                    // テキストベースの特徴抽出を試行
+                    extractedFeatures = extractFeaturesFromText(content);
+                    if (extractedFeatures) {
+                        console.log('✅ Extracted features from text:', extractedFeatures);
+                    } else {
+                        // 詳細なエラー情報を含む
+                        const errorDetails = {
+                            responseLength: content.length,
+                            firstChars: content.substring(0, 200),
+                            hasJsonChars: content.includes('{') && content.includes('}'),
+                            hasCodeBlock: content.includes('```')
+                        };
+                        console.error('❌ Detailed error info:', errorDetails);
+                        throw new Error(`有効なJSONレスポンスが見つかりませんでした。レスポンス詳細: 長さ${errorDetails.responseLength}文字, JSON文字含有${errorDetails.hasJsonChars}, コードブロック含有${errorDetails.hasCodeBlock}`);
+                    }
+                }
+                
+                // グローバル変数に設定
+                currentFeatures = extractedFeatures;
                 
                 // 結果表示
                 document.getElementById('featuresResult').textContent = JSON.stringify(currentFeatures, null, 2);
